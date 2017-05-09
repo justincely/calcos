@@ -190,7 +190,7 @@ def extract1D(input, incounts=None, output=None,
     col.append(fits.Column(name="EE_UPPER_INNER", format=rpt+"D"))
     cd = fits.ColDefs(col)
 
-    hdu = fits.new_table(cd, header=hdr, nrows=nrows)
+    hdu = fits.BinTableHDU.from_columns(cd, header=hdr, nrows=nrows)
     hdu.name = "SCI"
     ofd.append(hdu)
 
@@ -272,7 +272,7 @@ def remove_unwanted_columns(ofd):
                                        disp=column.disp,
                                        array=table[column.name]))
     cd = fits.ColDefs(newcols)
-    newhdu = fits.new_table(cd, header=ofd[1].header)
+    newhdu = fits.BinTableHDU.from_columns(cd, header=ofd[1].header)
     ofd[1] = newhdu
     return ofd
 
@@ -1236,7 +1236,7 @@ def extractSegmentTwozone(e_data, c_data, e_dq_data, ofd_header, segment,
                           user_xdisp_locn=None, user_xdisp_size=None,
                           find_target={"flag": False, "cutoff": None}):
     """Do the two-zone extraction
-    
+
      This does the actual extraction, returning the results as a tuple.
 
     An "_ij" suffix indicates a 2-D array; here they will all be sections
@@ -1259,7 +1259,7 @@ def extractSegmentTwozone(e_data, c_data, e_dq_data, ofd_header, segment,
       UPPER_OUTER_INDEX_i Zone boundaries in the data
       ENCLOSED_FRACTION_i   Actual fraction of flux within outer boundaries
       AV_E_BKG_i     Average background per pixel
-      LOWER_OUTER_VALUE_i   Fraction of flux enclosed at and above 
+      LOWER_OUTER_VALUE_i   Fraction of flux enclosed at and above
                             row lower_outer_index
       LOWER_INNER_VALUE_i   Fraction of flux enclosed at and above
                             row lower_inner_index
@@ -1587,7 +1587,7 @@ def extractSegmentTwozone(e_data, c_data, e_dq_data, ofd_header, segment,
         bkg_height2  = xtract_info.field("b_hgt2")[0]
     else:
         bkg_height1  = xtract_info.field("bheight")[0]
-        bkg_height2  = bkg_height1    
+        bkg_height2  = bkg_height1
     updateExtractionKeywords(ofd_header, segment,
                              slope, height,
                              xd_nominal, centroid, cent_err, offset,
@@ -2628,7 +2628,7 @@ def concatenateFUVSegments(infiles, output):
 
     # Take output column definitions from input for segment A.
     cd = fits.ColDefs(seg_a[1])
-    hdu = fits.new_table(cd, seg_a[1].header, nrows=nrows_a+nrows_b)
+    hdu = fits.BinTableHDU.from_columns(cd, seg_a[1].header, nrows=nrows_a+nrows_b)
 
     # Copy data from input to output.
     copySegments(seg_a[1].data, nrows_a, seg_b[1].data, nrows_b, hdu.data)

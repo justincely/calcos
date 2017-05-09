@@ -949,7 +949,7 @@ def saveNewGTI(ofd, gti):
     col.append(fits.Column(name="START", format="1D", unit="s"))
     col.append(fits.Column(name="STOP", format="1D", unit="s"))
     cd = fits.ColDefs(col)
-    hdu = fits.new_table(cd, nrows=len_gti)
+    hdu = fits.BinTableHDU.from_columns(cd, nrows=len_gti)
     hdu.header["extname"] = "GTI"
     outdata = hdu.data
     startcol = outdata.field("START")
@@ -2386,7 +2386,7 @@ def doDqicorr(events, input, info, switches, reffiles,
                                               minmax_doppler)
 
         phdr["dqicorr"] = "COMPLETE"
-                                        
+
         if extn is not None:
             if "gsagtab" in phdr:
                 # replace the comment, to give the extension number
@@ -2414,7 +2414,7 @@ def traceShiftDQ(dq_array, traceprofile, wca_row):
     for column in range(ncolumns):
     #
     # Calculate the extent of the WCA aperture
-        wcacenter = wca_0 + int(round(column*wcaslope)) 
+        wcacenter = wca_0 + int(round(column*wcaslope))
         wcastart = wcacenter - wcaheight // 2
         wcastop = wcacenter + wcaheight // 2
         tracevalue = int(round(traceprofile[column]))
@@ -2495,7 +2495,7 @@ def  blurDQ(trace_dq, minmax_shift_dict, minmax_doppler, doppler_boundary, widen
                 cosutil.printMsg("Shifting to %d, %d" % (xshift, yshift))
                 shifted_dq = arrayShift(y_shifted_dq[lower_y:upper_y], 0, xshift)
                 blur_dq[lower_y:upper_y] = np.bitwise_or(blur_dq[lower_y:upper_y], shifted_dq)
-        
+
     return blur_dq
 
 def arrayShift(array, yshift, xshift):
@@ -3664,7 +3664,7 @@ def writeNull(input, ofd, output, outcounts, outcsum,
 
 def createTraceMask(events, info, switches, xtractab, active_area):
     """Create a mask for events that will be corrected.  This is events within
-    the Active Area, but not including the events in the tagflash region""" 
+    the Active Area, but not including the events in the tagflash region"""
     #
     # Only create the tracemask if we are going to do either the trace
     # correction or the profile alignment correction

@@ -207,7 +207,7 @@ def createCorrtagHDU(nrows, detector, header):
     # Rename or delete some image-specific keywords.
     header = imageHeaderToCorrtag(header)
 
-    hdu = fits.new_table(cd, header=header, nrows=nrows)
+    hdu = fits.BinTableHDU.from_columns(cd, header=header, nrows=nrows)
 
     return hdu
 
@@ -311,7 +311,7 @@ def dummyGTI(exptime):
     col.append(fits.Column(name="START", format="1D", unit="s"))
     col.append(fits.Column(name="STOP", format="1D", unit="s"))
     cd = fits.ColDefs(col)
-    hdu = fits.new_table(cd, nrows=1)
+    hdu = fits.BinTableHDU.from_columns(cd, nrows=1)
     hdu.header["extname"] = "GTI"
     outdata = hdu.data
     outdata.field("START")[:] = 0.
@@ -1055,7 +1055,7 @@ def checkSpottabKeywords(reffiles, info):
     reffiles: dictionary
         Dictionary of reference files
     """
-    
+
     if reffiles["phafile"] == NOT_APPLICABLE:
         #
         # Skip the check if a PHAFILE is used, the PHA_LOW and PHA_HI
@@ -1334,7 +1334,7 @@ def getDQArrays(info, reffiles, gti):
                     spot_dx = spot_info.field("dx")
                     spot_dy = spot_info.field("dy")
                     spot_dq = spot_info.field("dq")
-                    
+
                     lx = concatArrays(lx, spot_lx)
                     ly = concatArrays(ly, spot_ly)
                     dx = concatArrays(dx, spot_dx)
@@ -1956,7 +1956,7 @@ def correctTraceAndAlignment(dq_array, info, traceprofile, shift1,
 
     alignment_correction:
         The offset that was added to the YFULL values  to correct the alignment
-        
+
     """
     nrows, ncols = dq_array.shape
     total_correction = None

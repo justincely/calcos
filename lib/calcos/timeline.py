@@ -180,6 +180,8 @@ def createTimeline(input, fd, info, reffiles,
     sun_zd_col = tl_data.field("sun_zd")
     long_col = tl_data.field("longitude")
     lat_col = tl_data.field("latitude")
+    sun_lon_col = tl_data.field("sun_lon")
+    sun_lat_col = tl_data.field("sun_lat")
 
     if external_target:
         ra_targ = info["ra_targ"] * DEGtoRAD
@@ -204,6 +206,15 @@ def createTimeline(input, fd, info, reffiles,
         rect_sun = eqSun(mjd)                   # equatorial coords of the Sun
         sun_alt_col[i] = computeAlt(rect_sun, rect_hst, parallax=True)
         sun_zd_col[i] = computeZD(rect_sun, rect_hst)
+
+        (r, ra_sun, dec_sun) = rectToSph( rect_sun )
+        lat_sun = dec_sun
+        long_sun = ra_sun - 2. * math.pi * gmst(mjd)
+        if long_sun < 0.:
+            long_sun += (2. * math.pi)
+        sun_lon_col[i] = long_sun / DEGtoRAD
+        sun_lat_col[i] = lat_sun / DEGtoRAD
+
         if external_target:
             rv_col[i] = -dotProduct(rect_targ, vel_hst)
             target_alt_col[i] = computeAlt(rect_targ, rect_hst,
@@ -350,6 +361,10 @@ def timelineHDU(nrows_timeline, hdr):
                            unit="degree", disp="F6.2"))
     col.append(fits.Column(name="SUN_ZD", format="1E",
                            unit="degree", disp="F6.2"))
+    col.append(fits.Column(name="SUN_LON", format="1E",
+                           unit="degree", disp="F10.6"))
+    col.append(fits.Column(name="SUN_LAT", format="1E",
+                           unit="degree", disp="F10.6"))
     col.append(fits.Column(name="TARGET_ALT", format="1E",
                            unit="degree", disp="F6.2"))
     col.append(fits.Column(name="RADIAL_VEL", format="1E",
@@ -366,7 +381,7 @@ def timelineHDU(nrows_timeline, hdr):
                            unit="count /s /pixel", disp="G15.6"))
     cd = fits.ColDefs(col)
 
-    hdu = fits.new_table(cd, header=hdr, nrows=nrows_timeline)
+    hdu = fits.BinTableHDU.from_columns(cd, header=hdr, nrows=nrows_timeline)
 
     hdu.header.set("extname", "TIMELINE", after="TFIELDS")      # xxx temp
     hdu.header.set("extver", 1, after="EXTNAME")        # xxx temporary
